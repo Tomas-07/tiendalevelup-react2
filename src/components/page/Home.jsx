@@ -1,113 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import Header from '../components/organisms/Header/Header';
+import Footer from '../components/organisms/Footer/Footer';
+import ProductCard from '../components/molecules/ProductCard/ProductCard';
+import ProductFilter from '../components/molecules/ProductFilter/ProductFilter';
+import { products, categories, priceRanges, formatPrice, filterProducts } from '../data/products';
+import '../App.css';
 
-
-function App() {
+const Home = () => {
   const [cartCount, setCartCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('todas');
   const [selectedPrice, setSelectedPrice] = useState('todos');
 
-  // Datos de productos
-  const products = [
-    {
-      id: '1',
-      nombre: 'Catan',
-      precio: 29990,
-      descripcion: 'Un clásico juego de estrategia para 3-4 jugadores.',
-      imagen: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVZG1G_ZdkpPVHE9O8kqSNWPRHjKC3Vz9Sag&s',
-      categoria: 'juegos-mesa',
-      codigo: 'JM001'
-    },
-    {
-      id: '2',
-      nombre: 'Carcassonne',
-      precio: 24990,
-      descripcion: 'Juego de fichas y construcción de paisajes medievales.',
-      imagen: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUNb5P5Cj9UCEVmLua1VI7Z81P79V4DtMu0Q&s',
-      categoria: 'juegos-mesa',
-      codigo: 'JM002'
-    },
-    {
-      id: '3',
-      nombre: 'PlayStation 5',
-      precio: 549990,
-      descripcion: 'Consola de nueva generación con gráficos impresionantes.',
-      imagen: 'https://gsmpro.cl/cdn/shop/articles/16991bf65a7a52901d78b55fa36bddc8.jpg?v=1737343320',
-      categoria: 'consolas',
-      codigo: 'CO001'
-    },
-    {
-      id: '4',
-      nombre: 'PC Gamer ASUS ROG Strix',
-      precio: 1299990,
-      descripcion: 'Potente equipo para los gamers más exigentes.',
-      imagen: 'https://dlcdnwebimgs.asus.com/files/media/6C1CAB30-D5C6-4D6E-90DC-B6A088360E12/V1/img/frame/01.jpg',
-      categoria: 'computadores',
-      codigo: 'CG001'
-    },
-    {
-      id: '5',
-      nombre: 'Silla Gamer Secretlab Titan',
-      precio: 349990,
-      descripcion: 'Ergonómica, cómoda y ajustable para largas sesiones de juego.',
-      imagen: 'https://m.media-amazon.com/images/I/51ajrSvAdiL.jpg',
-      categoria: 'sillas',
-      codigo: 'SG001'
-    },
-    {
-      id: '6',
-      nombre: 'Mouse Gamer Logitech G502 HERO',
-      precio: 49990,
-      descripcion: 'Sensor de alta precisión y botones personalizables.',
-      imagen: 'https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_UF894,1000_QL80_.jpg',
-      categoria: 'mouse',
-      codigo: 'MS001'
-    },
-    {
-      id: '7',
-      nombre: 'Mousepad Razer Goliathus Extended Chroma',
-      precio: 29990,
-      descripcion: 'Área de juego amplia con iluminación RGB personalizable.',
-      imagen: 'https://assets2.razerzone.com/images/pnx.assets/f024c732d60734e43b0c95945683c3cc/razer-goliathus-extended-chroma-size.jpg',
-      categoria: 'mousepad',
-      codigo: 'MP001'
-    }
-  ];
+  // Filtrar productos usando useMemo para optimización
+  const filteredProducts = useMemo(() => {
+    const filters = { searchTerm, category: selectedCategory, priceRange: selectedPrice };
+    return filterProducts(products, filters);
+  }, [searchTerm, selectedCategory, selectedPrice]);
 
   const handleAddToCart = (product) => {
     setCartCount(prev => prev + 1);
     console.log('Producto agregado al carrito:', product);
-    // Aquí puedes agregar la lógica para manejar el carrito
+    // Aquí podrías agregar lógica para manejar el carrito
   };
 
-  const formatPrice = (price) => {
-    return `$${price.toLocaleString('es-CL')} CLP`;
+  const handleNavClick = (section) => {
+    const element = document.getElementById(section);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
     <div className="App">
-      {/* HEADER */}
-      <header className="header">
-        <div className="logo">
-          <h1>🎮 Level-Up Gamer</h1>
-        </div>
-        <nav>
-          <ul className="nav-list">
-            <li><a href="#inicio">Inicio</a></li>
-            <li><a href="#catalogo">Catálogo</a></li>
-            <li><a href="#comunidad">Comunidad</a></li>
-            <li><a href="#eventos">Eventos</a></li>
-            <li><a href="#contacto">Contacto</a></li>
-            <li><a href="/login">Login</a></li>
-            <li>
-              <a href="/carrito" className="cart-link">
-                🛒 Carrito (<span id="carrito-count">{cartCount}</span>)
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
-
+      <Header 
+        cartCount={cartCount} 
+        onNavClick={handleNavClick}
+      />
+      
       <main>
         {/* SECCIÓN INICIO */}
         <section id="inicio" className="section">
@@ -122,92 +52,53 @@ function App() {
         <section id="catalogo" className="section">
           <h2>Nuestros Productos</h2>
           
-          {/* FILTROS AVANZADOS */}
-          <div className="filtros-container">
-            {/* Búsqueda */}
-            <div className="filter-group">
-              <label htmlFor="busqueda" className="filter-label">
-                🔍 Buscar productos
-              </label>
-              <input 
-                type="text" 
-                id="busqueda" 
-                placeholder="Buscar por nombre..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="filter-input"
-              />
-            </div>
+          {/* Componente de Filtros */}
+          <ProductFilter
+            searchTerm={searchTerm}
+            selectedCategory={selectedCategory}
+            selectedPrice={selectedPrice}
+            onSearchChange={setSearchTerm}
+            onCategoryChange={setSelectedCategory}
+            onPriceChange={setSelectedPrice}
+            categories={categories}
+            priceRanges={priceRanges}
+          />
 
-            {/* Filtro por categoría */}
-            <div className="filter-group">
-              <label htmlFor="filtro-categoria" className="filter-label">
-                📦 Categoría
-              </label>
-              <select 
-                id="filtro-categoria" 
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="filter-select"
-              >
-                <option value="todas">Todas las categorías</option>
-                <option value="juegos-mesa">Juegos de Mesa</option>
-                <option value="accesorios">Accesorios</option>
-                <option value="consolas">Consolas</option>
-                <option value="computadores">Computadores Gamers</option>
-                <option value="sillas">Sillas Gamers</option>
-                <option value="mouse">Mouse</option>
-                <option value="mousepad">Mousepad</option>
-                <option value="poleras">Poleras Personalizadas</option>
-                <option value="polerones">Polerones Gamers</option>
-              </select>
-            </div>
-
-            {/* Filtro por precio */}
-            <div className="filter-group">
-              <label htmlFor="filtro-precio" className="filter-label">
-                💰 Rango de precio
-              </label>
-              <select 
-                id="filtro-precio" 
-                value={selectedPrice}
-                onChange={(e) => setSelectedPrice(e.target.value)}
-                className="filter-select"
-              >
-                <option value="todos">Todos los precios</option>
-                <option value="bajo">Menos de $50.000</option>
-                <option value="medio">$50.000 - $200.000</option>
-                <option value="alto">Más de $200.000</option>
-              </select>
-            </div>
+          {/* Contador de productos */}
+          <div style={{ 
+            textAlign: 'center', 
+            marginBottom: '1rem',
+            color: 'var(--light-gray)'
+          }}>
+            {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
           </div>
 
           {/* GRID DE PRODUCTOS */}
           <div className="productos">
-            {products.map(product => (
-              <article key={product.id} className="producto">
-                <img src={product.imagen} alt={product.nombre} />
-                <h3>{product.nombre}</h3>
-                <p className="precio">{formatPrice(product.precio)}</p>
-                <p className="descripcion">{product.descripcion}</p>
-                
-                {product.codigo === 'CO001' && (
-                  <a href={`/productos/${product.codigo}`} className="btn-detalles">
-                    Ver detalles
-                  </a>
-                )}
-                
-                <button 
-                  className="btn-agregar"
-                  onClick={() => handleAddToCart(product)}
-                >
-                  Agregar al carrito
-                </button>
-              </article>
-            ))}
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  formatPrice={formatPrice}
+                />
+              ))
+            ) : (
+              <div style={{ 
+                gridColumn: '1 / -1', 
+                textAlign: 'center', 
+                padding: '3rem',
+                color: 'var(--muted-gray)'
+              }}>
+                <h3>No se encontraron productos</h3>
+                <p>Intenta con otros filtros de búsqueda</p>
+              </div>
+            )}
           </div>
         </section>
 
+        {/* Las demás secciones se mantienen igual */}
         {/* SECCIÓN COMUNIDAD */}
         <section id="comunidad" className="section">
           <h2>Comunidad Gamer</h2>
@@ -291,21 +182,9 @@ function App() {
         </section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="site-footer">
-        <div className="footer-content">
-          <p>&copy; 2025 Level-Up Gamer – Despachos a todo Chile</p>
-          <nav className="footer-nav">
-            <a href="#inicio">Inicio</a> ·
-            <a href="#catalogo">Catálogo</a> ·
-            <a href="#comunidad">Comunidad</a> ·
-            <a href="#eventos">Eventos</a> ·
-            <a href="#contacto">Contacto</a>
-          </nav>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
-}
+};
 
-export default App;
+export default Home;
