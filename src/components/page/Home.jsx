@@ -1,152 +1,196 @@
-import React, { useState, useMemo } from 'react';
-import Header from '../components/organisms/Header/Header';
-import Footer from '../components/organisms/Footer/Footer';
-import ProductCard from '../components/molecules/ProductCard/ProductCard';
-import ProductFilter from '../components/molecules/ProductFilter/ProductFilter';
-import { products, categories, priceRanges, formatPrice, filterProducts } from '../data/products';
-import '../App.css';
+import React from 'react';
+
+
+import Header from '../organisms/Header';
+import Footer from '../organisms/Footer';
 
 const Home = () => {
-  const [cartCount, setCartCount] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('todas');
-  const [selectedPrice, setSelectedPrice] = useState('todos');
-
-  // Filtrar productos usando useMemo para optimización
-  const filteredProducts = useMemo(() => {
-    const filters = { searchTerm, category: selectedCategory, priceRange: selectedPrice };
-    return filterProducts(products, filters);
-  }, [searchTerm, selectedCategory, selectedPrice]);
-
-  const handleAddToCart = (product) => {
-    setCartCount(prev => prev + 1);
-    console.log('Producto agregado al carrito:', product);
-    // Aquí podrías agregar lógica para manejar el carrito
-  };
-
-  const handleNavClick = (section) => {
-    const element = document.getElementById(section);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  // Datos de productos
+  const productos = [
+    {
+      codigo: "JM001",
+      nombre: "Catan",
+      precio: 29990,
+      categoria: "juegos-mesa",
+      imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVZG1G_ZdkpPVHE9O8kqSNWPRHjKC3Vz9Sag&s",
+      descripcion: "Un clásico juego de estrategia para 3-4 jugadores."
+    },
+    {
+      codigo: "JM002",
+      nombre: "Carcassonne",
+      precio: 24990,
+      categoria: "juegos-mesa",
+      imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUNb5P5Cj9UCEVmLua1VI7Z81P79V4DtMu0Q&s",
+      descripcion: "Juego de fichas y construcción de paisajes medievales."
+    },
+    {
+      codigo: "CO001",
+      nombre: "PlayStation 5",
+      precio: 549990,
+      categoria: "consolas",
+      imagen: "https://gsmpro.cl/cdn/shop/articles/16991bf65a7a52901d78b55fa36bddc8.jpg?v=1737343320",
+      descripcion: "Consola de nueva generación con gráficos impresionantes."
+    },
+    {
+      codigo: "CG001",
+      nombre: "PC Gamer ASUS ROG Strix",
+      precio: 1299990,
+      categoria: "computadores",
+      imagen: "https://dlcdnwebimgs.asus.com/files/media/6C1CAB30-D5C6-4D6E-90DC-B6A088360E12/V1/img/frame/01.jpg",
+      descripcion: "Potente equipo para los gamers más exigentes."
+    },
+    {
+      codigo: "SG001",
+      nombre: "Silla Gamer Secretlab Titan",
+      precio: 349990,
+      categoria: "sillas",
+      imagen: "https://m.media-amazon.com/images/I/51ajrSvAdiL.jpg",
+      descripcion: "Ergonómica, cómoda y ajustable para largas sesiones de juego."
+    },
+    {
+      codigo: "MS001",
+      nombre: "Mouse Gamer Logitech G502 HERO",
+      precio: 49990,
+      categoria: "mouse",
+      imagen: "https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_UF894,1000_QL80_.jpg",
+      descripcion: "Sensor de alta precisión y botones personalizables."
+    },
+    {
+      codigo: "MP001",
+      nombre: "Mousepad Razer Goliathus Extended Chroma",
+      precio: 29990,
+      categoria: "mousepad",
+      imagen: "https://assets2.razerzone.com/images/pnx.assets/f024c732d60734e43b0c95945683c3cc/razer-goliathus-extended-chroma-size.jpg",
+      descripcion: "Área de juego amplia con iluminación RGB personalizable."
     }
-  };
+  ];
 
   return (
     <div className="App">
-      <Header 
-        cartCount={cartCount} 
-        onNavClick={handleNavClick}
-      />
+      <Header/>
       
       <main>
+        
         {/* SECCIÓN INICIO */}
-        <section id="inicio" className="section">
+        <section id="inicio">
           <h2>Bienvenido a Level-Up Gamer</h2>
           <p>Tu tienda online gamer en Chile 🚀</p>
-          <p style={{ color: '#39FF14', marginTop: '1rem' }}>
+          <p style={{color: '#39FF14', marginTop: '1rem'}}>
             ¡Gana puntos LevelUp con cada compra y desbloquea descuentos exclusivos!
           </p>
         </section>
 
         {/* SECCIÓN CATÁLOGO */}
-        <section id="catalogo" className="section">
+        <section id="catalogo">
           <h2>Nuestros Productos</h2>
           
-          {/* Componente de Filtros */}
-          <ProductFilter
-            searchTerm={searchTerm}
-            selectedCategory={selectedCategory}
-            selectedPrice={selectedPrice}
-            onSearchChange={setSearchTerm}
-            onCategoryChange={setSelectedCategory}
-            onPriceChange={setSelectedPrice}
-            categories={categories}
-            priceRanges={priceRanges}
-          />
+          {/* FILTROS AVANZADOS */}
+          <div className="filtros-container" style={{maxWidth: '1200px', margin: '0 auto 2rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', padding: '0 2rem'}}>
+            
+            {/* Búsqueda */}
+            <div>
+              <label htmlFor="busqueda" style={{display: 'block', color: '#D3D3D3', marginBottom: '0.5rem', fontWeight: '600'}}>🔍 Buscar productos</label>
+              <input 
+                type="text" 
+                id="busqueda" 
+                placeholder="Buscar por nombre..." 
+                style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #222', background: '#1a1a1a', color: '#fff', fontSize: '1rem'}}
+              />
+            </div>
 
-          {/* Contador de productos */}
-          <div style={{ 
-            textAlign: 'center', 
-            marginBottom: '1rem',
-            color: 'var(--light-gray)'
-          }}>
-            {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+            {/* Filtro por categoría */}
+            <div>
+              <label htmlFor="filtro-categoria" style={{display: 'block', color: '#D3D3D3', marginBottom: '0.5rem', fontWeight: '600'}}>📦 Categoría</label>
+              <select 
+                id="filtro-categoria" 
+                style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #222', background: '#1a1a1a', color: '#fff', fontSize: '1rem', cursor: 'pointer'}}
+              >
+                <option value="todas">Todas las categorías</option>
+                <option value="juegos-mesa">Juegos de Mesa</option>
+                <option value="accesorios">Accesorios</option>
+                <option value="consolas">Consolas</option>
+                <option value="computadores">Computadores Gamers</option>
+                <option value="sillas">Sillas Gamers</option>
+                <option value="mouse">Mouse</option>
+                <option value="mousepad">Mousepad</option>
+                <option value="poleras">Poleras Personalizadas</option>
+                <option value="polerones">Polerones Gamers</option>
+              </select>
+            </div>
+
+            {/* Filtro por precio */}
+            <div>
+              <label htmlFor="filtro-precio" style={{display: 'block', color: '#D3D3D3', marginBottom: '0.5rem', fontWeight: '600'}}>💰 Rango de precio</label>
+              <select 
+                id="filtro-precio" 
+                style={{width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid #222', background: '#1a1a1a', color: '#fff', fontSize: '1rem', cursor: 'pointer'}}
+              >
+                <option value="todos">Todos los precios</option>
+                <option value="bajo">Menos de $50.000</option>
+                <option value="medio">$50.000 - $200.000</option>
+                <option value="alto">Más de $200.000</option>
+              </select>
+            </div>
           </div>
 
           {/* GRID DE PRODUCTOS */}
           <div className="productos">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                  formatPrice={formatPrice}
-                />
-              ))
-            ) : (
-              <div style={{ 
-                gridColumn: '1 / -1', 
-                textAlign: 'center', 
-                padding: '3rem',
-                color: 'var(--muted-gray)'
-              }}>
-                <h3>No se encontraron productos</h3>
-                <p>Intenta con otros filtros de búsqueda</p>
-              </div>
-            )}
+            {productos.map(producto => (
+              <Producto key={producto.codigo} producto={producto} />
+            ))}
           </div>
         </section>
 
         {/* Las demás secciones se mantienen igual */}
         {/* SECCIÓN COMUNIDAD */}
-        <section id="comunidad" className="section">
+        <section id="comunidad">
           <h2>Comunidad Gamer</h2>
           <p>Explora artículos, noticias y consejos para mejorar tu experiencia de juego.</p>
           
-          <div className="comunidad-content">
-            <h3>Últimas Noticias</h3>
-            <div className="news-card">
-              <h4>🎮 Próximos Lanzamientos 2025</h4>
-              <p>Descubre los juegos más esperados del año y prepárate para las mejores experiencias gaming.</p>
+          <div style={{maxWidth: '800px', margin: '2rem auto', textAlign: 'left', padding: '0 2rem'}}>
+            <h3 style={{color: '#39FF14', marginBottom: '1rem'}}>Últimas Noticias</h3>
+            <div style={{background: '#111', padding: '1.5rem', borderRadius: '12px', marginBottom: '1rem', borderLeft: '4px solid #1E90FF'}}>
+              <h4 style={{color: '#1E90FF', marginBottom: '0.5rem'}}>🎮 Próximos Lanzamientos 2025</h4>
+              <p style={{color: '#D3D3D3'}}>Descubre los juegos más esperados del año y prepárate para las mejores experiencias gaming.</p>
             </div>
             
-            <div className="news-card green-border">
-              <h4>🏆 Consejos para Mejorar tu Setup</h4>
-              <p>Optimiza tu estación de juego con nuestras recomendaciones de expertos.</p>
+            <div style={{background: '#111', padding: '1.5rem', borderRadius: '12px', marginBottom: '1rem', borderLeft: '4px solid #39FF14'}}>
+              <h4 style={{color: '#39FF14', marginBottom: '0.5rem'}}>🏆 Consejos para Mejorar tu Setup</h4>
+              <p style={{color: '#D3D3D3'}}>Optimiza tu estación de juego con nuestras recomendaciones de expertos.</p>
             </div>
           </div>
         </section>
 
         {/* SECCIÓN EVENTOS */}
-        <section id="eventos" className="section">
+        <section id="eventos">
           <h2>Eventos Gamer en Chile</h2>
-          <p className="eventos-subtitle">¡Participa en eventos y gana puntos LevelUp!</p>
+          <p style={{marginBottom: '2rem'}}>¡Participa en eventos y gana puntos LevelUp!</p>
           
-          <div className="eventos-container">
-            <div className="eventos-card">
-              <h3>📍 Próximos Eventos</h3>
+          <div style={{maxWidth: '1000px', margin: '0 auto'}}>
+            {/* Mapa de eventos simulado */}
+            <div style={{background: '#111', padding: '2rem', borderRadius: '16px', border: '1px solid #222'}}>
+              <h3 style={{color: '#1E90FF', marginBottom: '1.5rem'}}>📍 Próximos Eventos</h3>
               
-              <div className="eventos-grid">
-                <div className="evento-item">
-                  <h4>🎮 Chile Gaming Expo 2025</h4>
-                  <p><strong>Fecha:</strong> 15-17 Noviembre 2025</p>
-                  <p><strong>Lugar:</strong> Centro de Eventos Movistar Arena, Santiago</p>
-                  <p><strong>Puntos:</strong> 200 LevelUp por asistencia</p>
+              <div style={{display: 'grid', gap: '1rem'}}>
+                <div style={{background: '#1a1a1a', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #1E90FF'}}>
+                  <h4 style={{color: '#39FF14', marginBottom: '0.5rem'}}>🎮 Chile Gaming Expo 2025</h4>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Fecha:</strong> 15-17 Noviembre 2025</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Lugar:</strong> Centro de Eventos Movistar Arena, Santiago</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Puntos:</strong> 200 LevelUp por asistencia</p>
                 </div>
 
-                <div className="evento-item green-border">
-                  <h4>🏆 Torneo League of Legends Regional</h4>
-                  <p><strong>Fecha:</strong> 5 Diciembre 2025</p>
-                  <p><strong>Lugar:</strong> Centro Cultural Gabriela Mistral, Santiago</p>
-                  <p><strong>Puntos:</strong> 300 LevelUp por participación</p>
+                <div style={{background: '#1a1a1a', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #39FF14'}}>
+                  <h4 style={{color: '#39FF14', marginBottom: '0.5rem'}}>🏆 Torneo League of Legends Regional</h4>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Fecha:</strong> 5 Diciembre 2025</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Lugar:</strong> Centro Cultural Gabriela Mistral, Santiago</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Puntos:</strong> 300 LevelUp por participación</p>
                 </div>
 
-                <div className="evento-item">
-                  <h4>🎯 Meetup Gamers Valparaíso</h4>
-                  <p><strong>Fecha:</strong> 20 Diciembre 2025</p>
-                  <p><strong>Lugar:</strong> Puerto Valparaíso</p>
-                  <p><strong>Puntos:</strong> 150 LevelUp por asistencia</p>
+                <div style={{background: '#1a1a1a', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #1E90FF'}}>
+                  <h4 style={{color: '#39FF14', marginBottom: '0.5rem'}}>🎯 Meetup Gamers Valparaíso</h4>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Fecha:</strong> 20 Diciembre 2025</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Lugar:</strong> Puerto Valparaíso</p>
+                  <p style={{color: '#D3D3D3', margin: '0.5rem 0'}}><strong>Puntos:</strong> 150 LevelUp por asistencia</p>
                 </div>
               </div>
             </div>
@@ -154,35 +198,33 @@ const Home = () => {
         </section>
 
         {/* SECCIÓN CONTACTO */}
-        <section id="contacto" className="section">
+        <section id="contacto">
           <h2>Contacto</h2>
           <p>¿Necesitas ayuda? Estamos aquí para ti.</p>
           
-          <div className="contacto-container">
-            <div className="contacto-card">
-              <p>
-                📧 Email: <a href="mailto:soporte@levelupgamer.cl" className="contact-link">
-                  soporte@levelupgamer.cl
-                </a>
+          <div style={{maxWidth: '600px', margin: '2rem auto', textAlign: 'left', padding: '0 2rem'}}>
+            <div style={{background: '#111', padding: '2rem', borderRadius: '12px', border: '1px solid #222'}}>
+              <p style={{marginBottom: '1rem'}}>
+                📧 Email: <a href="mailto:soporte@levelupgamer.cl" style={{color: '#1E90FF'}}>soporte@levelupgamer.cl</a>
               </p>
-              <p>
-                📱 WhatsApp: <a href="https://wa.me/56912345678" target="_blank" rel="noopener noreferrer" className="contact-link green">
-                  +56 9 1234 5678
-                </a>
+              <p style={{marginBottom: '1rem'}}>
+                📱 WhatsApp: <a href="https://wa.me/56912345678" target="_blank" rel="noopener noreferrer" style={{color: '#39FF14'}}>+56 9 1234 5678</a>
               </p>
-              <p>
+              <p style={{marginBottom: '1rem'}}>
                 🕐 Horario de atención: Lunes a Viernes, 9:00 - 18:00 hrs
               </p>
               
-              <a href="https://wa.me/56912345678" target="_blank" rel="noopener noreferrer" className="whatsapp-btn">
+              <a href="https://wa.me/56912345678" target="_blank" rel="noopener noreferrer"
+                 style={{display: 'inline-block', background: '#25D366', color: 'white', padding: '0.8rem 1.5rem', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', marginTop: '1rem'}}>
                 💬 Chat con Soporte Técnico
               </a>
             </div>
           </div>
         </section>
+
       </main>
 
-      <Footer />
+      <Footer/>
     </div>
   );
 };
