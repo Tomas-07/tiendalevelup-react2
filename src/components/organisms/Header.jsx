@@ -1,10 +1,7 @@
+
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
 
 const Header = () => {
-  const { itemCount } = useCart();
-
   return (
     <header>
       <div className="logo">
@@ -17,12 +14,8 @@ const Header = () => {
           <li><a href="#comunidad">Comunidad</a></li>
           <li><a href="#eventos">Eventos</a></li>
           <li><a href="#contacto">Contacto</a></li>
-          <li><Link to="/login">Login</Link></li>
-          <li>
-            <Link to="/carrito">
-              🛒 Carrito ({itemCount})
-            </Link>
-          </li>
+          <li><a href="Login.html">Login</a></li>
+          <li><a href="carrito.html">🛒 Carrito (<span id="carrito-count">0</span>)</a></li>
         </ul>
       </nav>
     </header>
