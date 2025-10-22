@@ -1,7 +1,38 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Header = () => {
+  const [carritoCount, setCarritoCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    // Actualizar contador del carrito
+    const actualizarCarrito = () => {
+      if (typeof carrito !== 'undefined' && carrito.items) {
+        const total = carrito.items.reduce((sum, item) => sum + item.cantidad, 0);
+        setCarritoCount(total);
+      }
+    };
+
+    // Verificar sesión
+    const verificarSesion = () => {
+      const logged = sessionStorage.getItem('isLoggedIn') === 'true';
+      setIsLoggedIn(logged);
+    };
+
+    actualizarCarrito();
+    verificarSesion();
+
+    // Actualizar cada vez que cambie la ruta
+    const interval = setInterval(() => {
+      actualizarCarrito();
+      verificarSesion();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [location]);
+
   return (
     <header>
       <div className="logo">
@@ -9,13 +40,21 @@ const Header = () => {
       </div>
       <nav>
         <ul>
-          <li><a href="#inicio">Inicio</a></li>
-          <li><a href="#catalogo">Catálogo</a></li>
-          <li><a href="#comunidad">Comunidad</a></li>
-          <li><a href="#eventos">Eventos</a></li>
-          <li><a href="#contacto">Contacto</a></li>
-          <li><a href="Login.html">Login</a></li>
-          <li><a href="carrito.html">🛒 Carrito (<span id="carrito-count">0</span>)</a></li>
+          <li><Link to="/#inicio">Inicio</Link></li>
+          <li><Link to="/#catalogo">Catálogo</Link></li>
+          <li><Link to="/#comunidad">Comunidad</Link></li>
+          <li><Link to="/#eventos">Eventos</Link></li>
+          <li><Link to="/#contacto">Contacto</Link></li>
+          {isLoggedIn ? (
+            <li><Link to="/perfil">Mi Perfil</Link></li>
+          ) : (
+            <li><Link to="/login">Login</Link></li>
+          )}
+          <li>
+            <Link to="/carrito">
+              🛒 Carrito (<span id="carrito-count">{carritoCount}</span>)
+            </Link>
+          </li>
         </ul>
       </nav>
     </header>

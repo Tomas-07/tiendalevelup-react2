@@ -1,163 +1,138 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './Login.css';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
-  });
-
-  const [errors, setErrors] = useState({});
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' });
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    
-    // Limpiar errores cuando el usuario empiece a escribir
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'El correo electrónico es requerido';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'El formato del correo no es válido';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'La contraseña es requerida';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
+    setIsLoading(true);
+    setMessage('');
+
+    // Validaciones básicas
+    if (!email || !password) {
+      setMessage('Por favor completa todos los campos');
+      setMessageType('error');
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setMessage({ text: '', type: '' });
+    // Simulación de inicio de sesión (integrar con tu lógica de validación)
+    setTimeout(() => {
+      // Aquí deberías validar con tu backend o sistema de autenticación
+      const storedUsers = JSON.parse(localStorage.getItem('usuarios') || '[]');
+      const user = storedUsers.find(u => u.email === email && u.password === password);
 
-    try {
-      // Simular una llamada a la API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Aquí iría la lógica real de autenticación
-      console.log('Datos de login:', formData);
-      
-      setMessage({ 
-        text: '¡Inicio de sesión exitoso! Redirigiendo...', 
-        type: 'success' 
-      });
-      
-      // Aquí iría la redirección después del login exitoso
-      // navigate('/dashboard');
-      
-    } catch (error) {
-      setMessage({ 
-        text: 'Error al iniciar sesión. Verifica tus credenciales.', 
-        type: 'error' 
-      });
-    } finally {
+      if (user) {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('userData', JSON.stringify(user));
+        
+        if (rememberMe) {
+          localStorage.setItem('rememberUser', email);
+        }
+
+        setMessage('¡Inicio de sesión exitoso! Redirigiendo...');
+        setMessageType('success');
+
+        setTimeout(() => {
+          navigate('/perfil');
+        }, 1500);
+      } else {
+        setMessage('Email o contraseña incorrectos');
+        setMessageType('error');
+      }
+
       setIsLoading(false);
-    }
+    }, 1000);
   };
 
   return (
-    <div className="login-page">
+    <div>
       {/* Fondo animado */}
       <div className="animated-bg"></div>
 
-      {/* Contenedor principal del login */}
+      {/* Contenedor de login */}
       <div className="login-container">
         
-        {/* Logo y título */}
+        {/* Logo */}
         <div className="login-logo">
           <i className="fas fa-gamepad logo-icon"></i>
           <h1 className="login-title">LEVEL-UP GAMER</h1>
           <p className="login-subtitle">Accede a tu cuenta gamer</p>
         </div>
 
-        {/* Mensajes de estado */}
-        {message.text && (
-          <div id="message" className={`message ${message.type}`}>
-            {message.text}
+        {/* Mensaje */}
+        {message && (
+          <div 
+            id="message" 
+            className={`message ${messageType}`}
+            style={{
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              textAlign: 'center',
+              background: messageType === 'success' ? '#39FF14' : '#ff6b6b',
+              color: messageType === 'success' ? '#000' : '#fff',
+              fontWeight: 'bold'
+            }}
+          >
+            {message}
           </div>
         )}
 
-        {/* Formulario de login */}
+        {/* Formulario */}
         <form className="login-form" onSubmit={handleSubmit}>
-          
-          {/* Campo email */}
+          {/* Email */}
           <div className="form-group">
             <label className="form-label" htmlFor="email">Email</label>
             <div className="input-container">
               <input 
                 type="email" 
                 id="email" 
-                name="email"
-                className={`form-input ${errors.email ? 'error' : ''}`}
+                className="form-input" 
                 placeholder="tu@email.com" 
-                value={formData.email}
-                onChange={handleChange}
                 required
                 autoComplete="email"
-                disabled={isLoading}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <i className="fas fa-envelope input-icon"></i>
             </div>
-            {errors.email && <span className="error-message">{errors.email}</span>}
           </div>
 
-          {/* Campo contraseña */}
+          {/* Contraseña */}
           <div className="form-group">
             <label className="form-label" htmlFor="password">Contraseña</label>
             <div className="input-container">
               <input 
                 type="password" 
                 id="password" 
-                name="password"
-                className={`form-input ${errors.password ? 'error' : ''}`}
+                className="form-input" 
                 placeholder="Tu contraseña" 
-                value={formData.password}
-                onChange={handleChange}
                 required
                 autoComplete="current-password"
-                disabled={isLoading}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <i className="fas fa-lock input-icon"></i>
             </div>
-            {errors.password && <span className="error-message">{errors.password}</span>}
           </div>
 
-          {/* Recordarme y olvidé contraseña */}
+          {/* Recordarme y olvidaste contraseña */}
           <div className="remember-container">
             <div className="checkbox-group">
               <div className="custom-checkbox">
                 <input 
                   type="checkbox" 
-                  id="rememberMe" 
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  disabled={isLoading}
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <span className="checkmark"></span>
               </div>
@@ -166,29 +141,24 @@ const Login = () => {
             <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
           </div>
 
-          {/* Botón de login */}
+          {/* Botón de inicio de sesión */}
           <button 
             type="submit" 
             className="login-button" 
-            id="loginBtn"
             disabled={isLoading}
           >
-            {isLoading ? (
-              <div className="loading"></div>
-            ) : (
-              <>
-                <i className="fas fa-sign-in-alt"></i>
-                <span>Iniciar Sesión</span>
-              </>
-            )}
+            <i className="fas fa-sign-in-alt"></i>
+            <span>{isLoading ? 'Iniciando...' : 'Iniciar Sesión'}</span>
+            {isLoading && <div className="loading"></div>}
           </button>
         </form>
 
-        {/* Enlace a registro */}
+        {/* Link de registro */}
         <div className="register-link">
-          <p className="muted">
+          <p className="muted" style={{ marginTop: '1rem' }}>
             ¿Aún no tienes cuenta?
-            <Link to="/registro" style={{marginLeft: '5px'}}>
+            {' '}
+            <Link to="/registro">
               <strong>¡Únete a Level-Up Gamer!</strong>
             </Link>
           </p>

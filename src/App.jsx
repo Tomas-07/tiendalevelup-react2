@@ -1,28 +1,29 @@
-import { useState } from 'react'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import './App.css'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-
-import { Link } from 'react-router-dom'
-import Carrito from './components/page/Carrito';
-
+import Home from './pages/Home';
+import Carrito from './pages/Carrito';
+import Login from './pages/Login';
+import Perfil from './pages/Perfil';
+import Registro from './pages/Registro';
+import './style.css';
+import Footer from './components/organisms/Footer';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path='/' element={<Home/>} />
-            
-            <Route path="/carrito" element={<Carrito/>} />
-            
-          </Routes>
-        </div>
-      </Router>
-    </BrowserRouter>
-    
-    
+    <Router>
+      <div className="App">
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/registro" element={<Registro />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
