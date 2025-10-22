@@ -1,16 +1,11 @@
-/* ============================================
-   LEVEL-UP GAMER - ESTILOS CONSOLIDADOS
-   ============================================ */
 
-/* Importar fuentes */
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Orbitron:wght@400;500;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-/* ============================================
-   VARIABLES CSS
-   ============================================ */
+
 :root {
-  /* Colores principales */
+  
   --primary-bg: #000000;
   --secondary-bg: #111111;
   --card-bg: #1a1a1a;
@@ -25,14 +20,12 @@
   --hover-green: #32E012;
   --star-color: #FFD54A;
   
-  /* Gradientes */
+ 
   --gradient-primary: linear-gradient(135deg, var(--electric-blue), var(--neon-green));
   --gradient-bg: linear-gradient(145deg, rgba(51, 51, 51, 0.9), rgba(0, 0, 0, 0.9));
 }
 
-/* ============================================
-   RESET Y ESTILOS BASE
-   ============================================ */
+
 * {
   margin: 0;
   padding: 0;
@@ -55,9 +48,7 @@ h1, h2, h3 {
   font-family: 'Orbitron', sans-serif;
 }
 
-/* ============================================
-   HEADER Y NAVEGACIÓN
-   ============================================ */
+
 header {
   display: flex;
   justify-content: space-between;
@@ -108,9 +99,7 @@ nav ul li:last-child a:hover {
   color: var(--primary-bg);
 }
 
-/* ============================================
-   SECCIONES PRINCIPALES
-   ============================================ */
+
 main {
   min-height: calc(100vh - 200px);
 }
@@ -134,9 +123,7 @@ section h2 {
   padding: 2rem;
 }
 
-/* ============================================
-   CATÁLOGO DE PRODUCTOS
-   ============================================ */
+
 .productos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -186,7 +173,7 @@ section h2 {
   line-height: 1.4;
 }
 
-/* Botones de productos */
+
 .btn-agregar,
 .btn-detalles,
 .btn-detalle {
@@ -226,9 +213,7 @@ section h2 {
   color: var(--primary-bg);
 }
 
-/* ============================================
-   PÁGINA DE DETALLES DEL PRODUCTO
-   ============================================ */
+
 .detalle-producto {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -288,9 +273,7 @@ section h2 {
   background: rgba(30, 144, 255, 0.1);
 }
 
-/* ============================================
-   SISTEMA DE RESEÑAS
-   ============================================ */
+
 .reviews-card {
   background: var(--secondary-bg);
   color: var(--white-text);
@@ -332,7 +315,7 @@ section h2 {
   margin-left: 0.25rem;
 }
 
-/* Sistema de estrellas */
+
 .stars {
   --value: 0;
   position: relative;
@@ -357,7 +340,7 @@ section h2 {
   color: var(--star-color);
 }
 
-/* Formulario de reseñas */
+
 .review-form {
   display: grid;
   gap: 1rem;
@@ -482,9 +465,6 @@ section h2 {
   color: var(--light-gray);
 }
 
-/* ============================================
-   CARRITO DE COMPRAS
-   ============================================ */
 .carrito {
   max-width: 1000px;
   margin: 40px auto;

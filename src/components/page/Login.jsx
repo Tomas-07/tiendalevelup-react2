@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -15,7 +16,7 @@ const Login = () => {
     setIsLoading(true);
     setMessage('');
 
-    // Validaciones básicas
+    
     if (!email || !password) {
       setMessage('Por favor completa todos los campos');
       setMessageType('error');
@@ -23,9 +24,9 @@ const Login = () => {
       return;
     }
 
-    // Simulación de inicio de sesión (integrar con tu lógica de validación)
+  
     setTimeout(() => {
-      // Aquí deberías validar con tu backend o sistema de autenticación
+      
       const storedUsers = JSON.parse(localStorage.getItem('usuarios') || '[]');
       const user = storedUsers.find(u => u.email === email && u.password === password);
 

@@ -7,7 +7,7 @@ const Header = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Actualizar contador del carrito
+   
     const actualizarCarrito = () => {
       if (typeof carrito !== 'undefined' && carrito.items) {
         const total = carrito.items.reduce((sum, item) => sum + item.cantidad, 0);
@@ -15,7 +15,7 @@ const Header = () => {
       }
     };
 
-    // Verificar sesión
+  
     const verificarSesion = () => {
       const logged = sessionStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(logged);
@@ -24,7 +24,7 @@ const Header = () => {
     actualizarCarrito();
     verificarSesion();
 
-    // Actualizar cada vez que cambie la ruta
+    
     const interval = setInterval(() => {
       actualizarCarrito();
       verificarSesion();
