@@ -1,313 +1,202 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const Carrito = () => {
-  const [items, setItems] = useState([]);
-  const [subtotal, setSubtotal] = useState(0);
-  const [descuentoDuoc, setDescuentoDuoc] = useState(0);
-  const [descuentoNivel, setDescuentoNivel] = useState(0);
-  const [totalFinal, setTotalFinal] = useState(0);
-  const [puntosGanados, setPuntosGanados] = useState(0);
-  const [nivelUsuario, setNivelUsuario] = useState({ name: 'Nivel 0', discount: 0 });
-  const [totalDescuento, setTotalDescuento] = useState(0);
+const Registro = () => {
+  const [nombre, setNombre] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mayor18, setMayor18] = useState(false);
+  const [codigoReferido, setCodigoReferido] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    cargarCarrito();
-  }, []);
-
-  const formatearPrecio = (precio) => {
-    const n = Number(precio) || 0;
-    return `$${n.toLocaleString('es-CL')}`;
+  const generateReferralCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
   };
 
-  const computeTotals = (carritoItems) => {
-    const sub = carritoItems.reduce((sum, item) => 
-      sum + (Number(item.precio) * Number(item.cantidad)), 0
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    const userData = JSON.parse(sessionStorage.getItem('userData') || '{}');
-    const points = Number(userData.levelUpPoints || 0);
-    
-    const level = (typeof gamification !== 'undefined' && gamification && typeof gamification.getUserLevel === 'function')
-      ? gamification.getUserLevel(points)
-      : { name: 'Nivel 0', discount: 0 };
-
-    let descDuoc = 0;
-    if (userData.descuentoDuoc) {
-      descDuoc = sub * (Number(userData.descuentoDuoc) / 100);
+    // Validaciones
+    if (!nombre || !email || !password) {
+      setMessage('Por favor completa todos los campos obligatorios');
+      setMessageType('error');
+      return;
     }
 
-    let descNivel = 0;
-    if (level.discount > 0) {
-      descNivel = sub * (Number(level.discount) / 100);
+    if (!mayor18) {
+      setMessage('Debes ser mayor de 18 años para registrarte');
+      setMessageType('error');
+      return;
     }
 
-    const totalDesc = descDuoc + descNivel;
-    const total = Math.max(0, sub - totalDesc);
-    const puntos = Math.floor(total / 1000);
+    if (password.length < 6) {
+      setMessage('La contraseña debe tener al menos 6 caracteres');
+      setMessageType('error');
+      return;
+    }
 
-    return { 
-      subtotal: sub, 
-      descuentoDuoc: descDuoc, 
-      descuentoNivel: descNivel, 
-      totalDescuento: totalDesc, 
-      totalFinal: total, 
-      puntosGanados: puntos, 
-      level 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage('Por favor ingresa un email válido');
+      setMessageType('error');
+      return;
+    }
+
+    // Obtener usuarios existentes
+    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+
+    // Verificar si el email ya existe
+    if (usuarios.some(u => u.email === email)) {
+      setMessage('Este email ya está registrado');
+      setMessageType('error');
+      return;
+    }
+
+    // Crear nuevo usuario
+    const nuevoUsuario = {
+      nombre,
+      email,
+      password,
+      codigoReferido: generateReferralCode(),
+      levelUpPoints: 0,
+      descuentoDuoc: 0,
+      preferencias: 'consolas',
+      fechaRegistro: new Date().toISOString()
     };
-  };
 
-  const cargarCarrito = () => {
-    if (typeof carrito !== 'undefined' && typeof carrito.init === 'function') {
-      carrito.init();
-    }
-
-    const carritoItems = (typeof carrito !== 'undefined' && carrito.items) ? carrito.items : [];
-    setItems(carritoItems);
-
-    if (carritoItems.length > 0) {
-      const totales = computeTotals(carritoItems);
-      setSubtotal(totales.subtotal);
-      setDescuentoDuoc(totales.descuentoDuoc);
-      setDescuentoNivel(totales.descuentoNivel);
-      setTotalDescuento(totales.totalDescuento);
-      setTotalFinal(totales.totalFinal);
-      setPuntosGanados(totales.puntosGanados);
-      setNivelUsuario(totales.level);
-    }
-  };
-
-  const actualizarCantidad = (codigo, cantidad) => {
-    const qty = Math.max(1, Math.min(99, parseInt(cantidad, 10) || 1));
-    if (typeof carrito !== 'undefined' && typeof carrito.modificarCantidad === 'function') {
-      carrito.modificarCantidad(codigo, qty);
-    }
-    cargarCarrito();
-  };
-
-  const eliminarItem = (codigo) => {
-    if (window.confirm('¿Deseas eliminar este producto del carrito?')) {
-      if (typeof carrito !== 'undefined' && typeof carrito.eliminar === 'function') {
-        carrito.eliminar(codigo);
-      }
-      cargarCarrito();
-      if (typeof mostrarMensaje === 'function') {
-        mostrarMensaje('Producto eliminado del carrito', 'success');
+    // Si ingresó un código de referido válido, darle puntos
+    if (codigoReferido) {
+      const referidor = usuarios.find(u => u.codigoReferido === codigoReferido.toUpperCase());
+      if (referidor) {
+        nuevoUsuario.levelUpPoints = 50; // Puntos de bienvenida por usar código
+        referidor.levelUpPoints = (referidor.levelUpPoints || 0) + 100; // Puntos para quien refirió
+        
+        // Actualizar el referidor en el array
+        const indexReferidor = usuarios.findIndex(u => u.codigoReferido === codigoReferido.toUpperCase());
+        usuarios[indexReferidor] = referidor;
       }
     }
-  };
 
-  const handlePagarClick = () => {
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-
-    if (!isLoggedIn) {
-      if (typeof mostrarMensaje === 'function') {
-        mostrarMensaje('Debes iniciar sesión para realizar la compra', 'error');
-      }
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-      return;
+    // Verificar si es estudiante DUOC
+    if (email.toLowerCase().includes('duoc') || email.toLowerCase().includes('@duocuc.cl')) {
+      nuevoUsuario.descuentoDuoc = 20; // 20% de descuento
     }
 
-    if (!items || items.length === 0) {
-      if (typeof mostrarMensaje === 'function') {
-        mostrarMensaje('Tu carrito está vacío', 'error');
-      }
-      return;
-    }
+    // Guardar usuario
+    usuarios.push(nuevoUsuario);
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
 
-    // Acreditar puntos
-    if (typeof gamification !== 'undefined' && typeof gamification.addPoints === 'function') {
-      gamification.addPoints('currentUser', puntosGanados);
-    }
+    setMessage('¡Cuenta creada exitosamente! Redirigiendo al login...');
+    setMessageType('success');
 
+    // Usar la función de validaciones.js si está disponible
     if (typeof mostrarMensaje === 'function') {
-      mostrarMensaje(`¡Compra exitosa! Has ganado ${puntosGanados} puntos LevelUp`, 'success');
-    }
-
-    if (typeof carrito !== 'undefined' && typeof carrito.vaciar === 'function') {
-      carrito.vaciar();
+      mostrarMensaje('¡Cuenta creada exitosamente!', 'success');
     }
 
     setTimeout(() => {
-      navigate('/perfil');
-    }, 3000);
+      navigate('/login');
+    }, 2000);
   };
 
   return (
-    <main className="wrap">
-      <h2>🛒 Tu Carrito de Compras</h2>
+    <main className="wrap" style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: 'calc(100vh - 200px)'
+    }}>
+      <section className="auth-box" style={{ width: '100%', maxWidth: '600px' }}>
+        <h2>Crear nueva cuenta</h2>
 
-      {/* Información de descuentos activos */}
-      {totalDescuento > 0 && (
-        <div style={{
-          background: 'linear-gradient(135deg, #1E90FF, #39FF14)',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '2rem',
-          color: '#000'
-        }}>
-          <h3 style={{ margin: '0 0 0.5rem', fontSize: '1.2rem' }}>🎉 ¡Descuentos Activos!</h3>
-          <div>
-            {descuentoDuoc > 0 && (
-              <p style={{ margin: '0.3rem 0', fontWeight: 600 }}>
-                Descuento DUOC: {formatearPrecio(descuentoDuoc)}
-              </p>
-            )}
-            {descuentoNivel > 0 && (
-              <p style={{ margin: '0.3rem 0', fontWeight: 600 }}>
-                Descuento {nivelUsuario.name}: {formatearPrecio(descuentoNivel)}
-              </p>
-            )}
-            <p style={{ margin: '0.3rem 0', fontWeight: 600 }}>
-              Total ahorrado: {formatearPrecio(totalDescuento)}
-            </p>
+        {message && (
+          <div 
+            style={{
+              padding: '1rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              textAlign: 'center',
+              background: messageType === 'success' ? '#39FF14' : '#ff6b6b',
+              color: messageType === 'success' ? '#000' : '#fff',
+              fontWeight: 'bold'
+            }}
+          >
+            {message}
           </div>
-        </div>
-      )}
-
-      {/* Tabla del carrito */}
-      <div id="carrito-container">
-        {items.length === 0 ? (
-          <div style={{
-            display: 'block',
-            textAlign: 'center',
-            padding: '3rem',
-            background: '#111',
-            borderRadius: '12px',
-            margin: '2rem 0'
-          }}>
-            <p style={{ fontSize: '1.2rem', color: '#D3D3D3', marginBottom: '1.5rem' }}>
-              🛒 Tu carrito está vacío
-            </p>
-            <Link to="/#catalogo" className="btn">Explorar productos</Link>
-          </div>
-        ) : (
-          <>
-            <table className="cart" style={{ display: 'table' }}>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th>Precio Unitario</th>
-                  <th>Cantidad</th>
-                  <th>Total línea</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map(item => {
-                  const totalLinea = Number(item.precio) * Number(item.cantidad);
-                  return (
-                    <tr key={item.codigo}>
-                      <td>{item.nombre}</td>
-                      <td>{formatearPrecio(item.precio)}</td>
-                      <td>
-                        <input 
-                          type="number" 
-                          value={item.cantidad} 
-                          min="1" 
-                          max="99"
-                          onChange={(e) => actualizarCantidad(item.codigo, e.target.value)}
-                          style={{
-                            width: '70px',
-                            padding: '0.5rem',
-                            textAlign: 'center',
-                            background: '#1a1a1a',
-                            color: '#fff',
-                            border: '1px solid #222',
-                            borderRadius: '6px'
-                          }}
-                          aria-label={`Cambiar cantidad para ${item.nombre}`}
-                        />
-                      </td>
-                      <td>{formatearPrecio(totalLinea)}</td>
-                      <td>
-                        <button 
-                          onClick={() => eliminarItem(item.codigo)}
-                          style={{
-                            background: '#ff6b6b',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold'
-                          }}
-                          type="button"
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan="3" style={{ textAlign: 'right' }}>
-                    <strong>Subtotal</strong>
-                  </td>
-                  <td><strong>{formatearPrecio(subtotal)}</strong></td>
-                  <td></td>
-                </tr>
-                {descuentoDuoc > 0 && (
-                  <tr>
-                    <td colSpan="3" style={{ textAlign: 'right', color: '#39FF14' }}>
-                      Descuento DUOC (20%)
-                    </td>
-                    <td style={{ color: '#39FF14' }}>-{formatearPrecio(descuentoDuoc)}</td>
-                    <td></td>
-                  </tr>
-                )}
-                {descuentoNivel > 0 && (
-                  <tr>
-                    <td colSpan="3" style={{ textAlign: 'right', color: '#1E90FF' }}>
-                      Descuento por Nivel
-                    </td>
-                    <td style={{ color: '#1E90FF' }}>
-                      -{formatearPrecio(descuentoNivel)} ({nivelUsuario.name} {nivelUsuario.discount}%)
-                    </td>
-                    <td></td>
-                  </tr>
-                )}
-                <tr style={{ borderTop: '2px solid #39FF14' }}>
-                  <td colSpan="3" style={{ textAlign: 'right', fontSize: '1.2rem' }}>
-                    <strong>TOTAL A PAGAR</strong>
-                  </td>
-                  <td style={{ fontSize: '1.3rem' }}>
-                    <strong>{formatearPrecio(totalFinal)}</strong>
-                  </td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td colSpan="5" style={{
-                    textAlign: 'right',
-                    color: '#39FF14',
-                    fontSize: '0.9rem'
-                  }}>
-                    Ganarás {puntosGanados} puntos LevelUp con esta compra
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-
-            <div className="acciones-carrito">
-              <Link to="/#catalogo" className="btn-seguir">⬅️ Seguir comprando</Link>
-              <button 
-                className="btn-pagar" 
-                type="button"
-                onClick={handlePagarClick}
-              >
-                Proceder al pago
-              </button>
-            </div>
-          </>
         )}
-      </div>
+
+        <form className="form" onSubmit={handleSubmit} noValidate>
+          <label htmlFor="reg-nombre">Nombre completo</label>
+          <input 
+            id="reg-nombre" 
+            type="text" 
+            placeholder="Tu nombre y apellido" 
+            required
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+          />
+
+          <label htmlFor="reg-email">Correo electrónico</label>
+          <input 
+            id="reg-email" 
+            type="email" 
+            placeholder="tucorreo@ejemplo.com" 
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <label htmlFor="reg-pass">Contraseña</label>
+          <input 
+            id="reg-pass" 
+            type="password" 
+            placeholder="Mínimo 6 caracteres" 
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <div className="checkline">
+            <input 
+              id="reg-18" 
+              type="checkbox"
+              checked={mayor18}
+              onChange={(e) => setMayor18(e.target.checked)}
+            />
+            <label htmlFor="reg-18">Declaro ser mayor de 18 años</label>
+          </div>
+
+          <label htmlFor="reg-ref">Código de referido (opcional)</label>
+          <input 
+            id="reg-ref" 
+            type="text" 
+            placeholder="Ej: AB12CD"
+            value={codigoReferido}
+            onChange={(e) => setCodigoReferido(e.target.value)}
+          />
+
+          <button className="btn" type="submit">Crear cuenta</button>
+        </form>
+
+        <p className="muted" style={{ marginTop: '1rem' }}>
+          ¿Ya tienes una cuenta?
+          {' '}
+          <Link to="/login"><strong>Log in</strong></Link>
+        </p>
+      </section>
     </main>
   );
 };
 
-export default Carrito;
+export default Registro;

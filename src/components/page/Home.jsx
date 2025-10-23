@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-
+import { Link } from 'react-router-dom'
+import {carrito, mostrarMensaje} from '../Atoms/Validaciones';
 const Home = () => {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaFiltro, setCategoriaFiltro] = useState('todas');
@@ -8,7 +8,7 @@ const Home = () => {
   const [carritoCount, setCarritoCount] = useState(0);
 
   useEffect(() => {
-    // Actualizar contador del carrito
+  
     if (typeof carrito !== 'undefined' && carrito.items) {
       setCarritoCount(carrito.items.reduce((sum, item) => sum + item.cantidad, 0));
     }
@@ -104,7 +104,7 @@ const Home = () => {
 
   return (
     <main>
-      {/* SECCIÓN INICIO */}
+     
       <section id="inicio">
         <h2>Bienvenido a Level-Up Gamer</h2>
         <p>Tu tienda online gamer en Chile 🚀</p>
@@ -113,11 +113,11 @@ const Home = () => {
         </p>
       </section>
 
-      {/* SECCIÓN CATÁLOGO */}
+     
       <section id="catalogo">
         <h2>Nuestros Productos</h2>
         
-        {/* FILTROS AVANZADOS */}
+       
         <div className="filtros-container" style={{
           maxWidth: '1200px',
           margin: '0 auto 2rem',
@@ -127,7 +127,7 @@ const Home = () => {
           padding: '0 2rem'
         }}>
           
-          {/* Búsqueda */}
+          
           <div>
             <label htmlFor="busqueda" style={{
               display: 'block',
@@ -155,7 +155,7 @@ const Home = () => {
             />
           </div>
 
-          {/* Filtro por categoría */}
+          
           <div>
             <label htmlFor="filtro-categoria" style={{
               display: 'block',
@@ -226,7 +226,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* GRID DE PRODUCTOS */}
+       
         <div className="productos">
           {filtrarProductos().map(producto => (
             <article 
@@ -241,7 +241,7 @@ const Home = () => {
               <p className="precio">{formatearPrecio(producto.precio)}</p>
               <p className="descripcion">{producto.descripcion}</p>
               {producto.detalles && (
-                <Link to="/play#play-ps5" className="btn-detalles">Ver detalles</Link>
+                <Link to="/play" className="btn-detalles">Ver detalles</Link>
               )}
               <button 
                 className="btn-agregar"
@@ -254,7 +254,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SECCIÓN COMUNIDAD */}
+      
       <section id="comunidad">
         <h2>Comunidad Gamer</h2>
         <p>Explora artículos, noticias y consejos para mejorar tu experiencia de juego.</p>
@@ -362,7 +362,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* SECCIÓN CONTACTO */}
+    
       <section id="contacto">
         <h2>Contacto</h2>
         <p>¿Necesitas ayuda? Estamos aquí para ti.</p>
