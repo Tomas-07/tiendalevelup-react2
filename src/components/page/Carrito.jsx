@@ -1,202 +1,188 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { carrito, gamification, mostrarMensaje } from '../Atoms/Validaciones';
 
-const Registro = () => {
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [mayor18, setMayor18] = useState(false);
-  const [codigoReferido, setCodigoReferido] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+const Carrito = () => {
+  const [items, setItems] = useState([]);
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
-  const generateReferralCode = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+  useEffect(() => {
+    
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoggedIn) {
+      mostrarMensaje('Debes iniciar sesión para ver el carrito', 'error');
+      navigate('/login');
+      return;
     }
-    return code;
+
+   
+    const user = JSON.parse(sessionStorage.getItem('userData') || '{}');
+    setUserData(user);
+
+    
+    carrito.init();
+    setItems(carrito.items);
+  }, [navigate]);
+
+  const handleEliminar = (codigo) => {
+    carrito.eliminar(codigo);
+    setItems([...carrito.items]);
+    mostrarMensaje('Producto eliminado del carrito', 'success');
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleCantidad = (codigo, cantidad) => {
+    carrito.modificarCantidad(codigo, cantidad);
+    setItems([...carrito.items]);
+  };
 
-    // Validaciones
-    if (!nombre || !email || !password) {
-      setMessage('Por favor completa todos los campos obligatorios');
-      setMessageType('error');
+  const handleVaciar = () => {
+    if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
+      carrito.vaciar();
+      setItems([]);
+      mostrarMensaje('Carrito vaciado', 'success');
+    }
+  };
+
+  const handleComprar = () => {
+    if (items.length === 0) {
+      mostrarMensaje('El carrito está vacío', 'error');
       return;
     }
 
-    if (!mayor18) {
-      setMessage('Debes ser mayor de 18 años para registrarte');
-      setMessageType('error');
-      return;
+    
+    const total = carrito.aplicarDescuentos();
+    const puntosGanados = Math.floor(total / 1000); 
+    
+    if (userData) {
+      gamification.addPoints(userData.email, puntosGanados);
     }
 
-    if (password.length < 6) {
-      setMessage('La contraseña debe tener al menos 6 caracteres');
-      setMessageType('error');
-      return;
-    }
-
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setMessage('Por favor ingresa un email válido');
-      setMessageType('error');
-      return;
-    }
-
-    // Obtener usuarios existentes
-    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-
-    // Verificar si el email ya existe
-    if (usuarios.some(u => u.email === email)) {
-      setMessage('Este email ya está registrado');
-      setMessageType('error');
-      return;
-    }
-
-    // Crear nuevo usuario
-    const nuevoUsuario = {
-      nombre,
-      email,
-      password,
-      codigoReferido: generateReferralCode(),
-      levelUpPoints: 0,
-      descuentoDuoc: 0,
-      preferencias: 'consolas',
-      fechaRegistro: new Date().toISOString()
-    };
-
-    // Si ingresó un código de referido válido, darle puntos
-    if (codigoReferido) {
-      const referidor = usuarios.find(u => u.codigoReferido === codigoReferido.toUpperCase());
-      if (referidor) {
-        nuevoUsuario.levelUpPoints = 50; // Puntos de bienvenida por usar código
-        referidor.levelUpPoints = (referidor.levelUpPoints || 0) + 100; // Puntos para quien refirió
-        
-        // Actualizar el referidor en el array
-        const indexReferidor = usuarios.findIndex(u => u.codigoReferido === codigoReferido.toUpperCase());
-        usuarios[indexReferidor] = referidor;
-      }
-    }
-
-    // Verificar si es estudiante DUOC
-    if (email.toLowerCase().includes('duoc') || email.toLowerCase().includes('@duocuc.cl')) {
-      nuevoUsuario.descuentoDuoc = 20; // 20% de descuento
-    }
-
-    // Guardar usuario
-    usuarios.push(nuevoUsuario);
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-    setMessage('¡Cuenta creada exitosamente! Redirigiendo al login...');
-    setMessageType('success');
-
-    // Usar la función de validaciones.js si está disponible
-    if (typeof mostrarMensaje === 'function') {
-      mostrarMensaje('¡Cuenta creada exitosamente!', 'success');
-    }
+    mostrarMensaje(`¡Compra realizada! Ganaste ${puntosGanados} puntos Level-Up`, 'success');
+    carrito.vaciar();
+    setItems([]);
 
     setTimeout(() => {
-      navigate('/login');
+      navigate('/perfil');
     }, 2000);
   };
 
-  return (
-    <main className="wrap" style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
-      padding: '2rem',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: 'calc(100vh - 200px)'
-    }}>
-      <section className="auth-box" style={{ width: '100%', maxWidth: '600px' }}>
-        <h2>Crear nueva cuenta</h2>
+  const subtotal = carrito.calcularTotal();
+  const totalConDescuento = carrito.aplicarDescuentos();
+  const descuento = subtotal - totalConDescuento;
+  const userLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0) : null;
 
-        {message && (
-          <div 
-            style={{
-              padding: '1rem',
-              borderRadius: '8px',
-              marginBottom: '1.5rem',
-              textAlign: 'center',
-              background: messageType === 'success' ? '#39FF14' : '#ff6b6b',
-              color: messageType === 'success' ? '#000' : '#fff',
-              fontWeight: 'bold'
-            }}
-          >
-            {message}
+  return (
+    <main className="wrap" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+      <section>
+        <h2>🛒 Mi Carrito de Compras</h2>
+
+        {userData && (
+          <div style={{ 
+            background: 'rgba(57, 255, 20, 0.1)', 
+            padding: '1rem', 
+            borderRadius: '8px',
+            marginBottom: '2rem',
+            border: '1px solid #39FF14'
+          }}>
+            <p><strong>Nivel:</strong> {userLevel?.name}</p>
+            <p><strong>Descuento por nivel:</strong> {userLevel?.discount}%</p>
+            {userData.descuentoDuoc > 0 && (
+              <p><strong>Descuento DUOC:</strong> {userData.descuentoDuoc}%</p>
+            )}
           </div>
         )}
 
-        <form className="form" onSubmit={handleSubmit} noValidate>
-          <label htmlFor="reg-nombre">Nombre completo</label>
-          <input 
-            id="reg-nombre" 
-            type="text" 
-            placeholder="Tu nombre y apellido" 
-            required
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-
-          <label htmlFor="reg-email">Correo electrónico</label>
-          <input 
-            id="reg-email" 
-            type="email" 
-            placeholder="tucorreo@ejemplo.com" 
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <label htmlFor="reg-pass">Contraseña</label>
-          <input 
-            id="reg-pass" 
-            type="password" 
-            placeholder="Mínimo 6 caracteres" 
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <div className="checkline">
-            <input 
-              id="reg-18" 
-              type="checkbox"
-              checked={mayor18}
-              onChange={(e) => setMayor18(e.target.checked)}
-            />
-            <label htmlFor="reg-18">Declaro ser mayor de 18 años</label>
+        {items.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '3rem' }}>
+            <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
+              Tu carrito está vacío
+            </p>
+            <Link to="/" className="btn">
+              Ir a comprar
+            </Link>
           </div>
+        ) : (
+          <>
+            <div className="carrito-items">
+              {items.map((item) => (
+                <div key={item.codigo} className="carrito-item" style={{
+                  display: 'flex',
+                  gap: '1rem',
+                  padding: '1rem',
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: '8px',
+                  marginBottom: '1rem',
+                  alignItems: 'center'
+                }}>
+                  {item.imagen && (
+                    <img 
+                      src={item.imagen} 
+                      alt={item.nombre}
+                      style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <h3>{item.nombre}</h3>
+                    <p>Precio: ${item.precio.toLocaleString('es-CL')}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <label>Cantidad:</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={item.cantidad}
+                      onChange={(e) => handleCantidad(item.codigo, e.target.value)}
+                      style={{ width: '60px', padding: '0.5rem' }}
+                    />
+                  </div>
+                  <p style={{ fontWeight: 'bold' }}>
+                    ${(item.precio * item.cantidad).toLocaleString('es-CL')}
+                  </p>
+                  <button 
+                    className="btn btn-danger"
+                    onClick={() => handleEliminar(item.codigo)}
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </div>
+              ))}
+            </div>
 
-          <label htmlFor="reg-ref">Código de referido (opcional)</label>
-          <input 
-            id="reg-ref" 
-            type="text" 
-            placeholder="Ej: AB12CD"
-            value={codigoReferido}
-            onChange={(e) => setCodigoReferido(e.target.value)}
-          />
+            <div style={{ 
+              marginTop: '2rem', 
+              padding: '2rem', 
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '8px'
+            }}>
+              <h3>Resumen de compra</h3>
+              <p>Subtotal: ${subtotal.toLocaleString('es-CL')}</p>
+              {descuento > 0 && (
+                <p style={{ color: '#39FF14' }}>
+                  Descuento: -${descuento.toLocaleString('es-CL')}
+                </p>
+              )}
+              <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#39FF14' }}>
+                Total: ${totalConDescuento.toLocaleString('es-CL')}
+              </p>
 
-          <button className="btn" type="submit">Crear cuenta</button>
-        </form>
-
-        <p className="muted" style={{ marginTop: '1rem' }}>
-          ¿Ya tienes una cuenta?
-          {' '}
-          <Link to="/login"><strong>Log in</strong></Link>
-        </p>
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                <button className="btn" onClick={handleComprar}>
+                  💳 Finalizar Compra
+                </button>
+                <button className="btn btn-secondary" onClick={handleVaciar}>
+                  🗑️ Vaciar Carrito
+                </button>
+                <Link to="/" className="btn btn-secondary">
+                  ← Seguir comprando
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
       </section>
     </main>
   );
 };
 
-export default Registro;
+export default Carrito;

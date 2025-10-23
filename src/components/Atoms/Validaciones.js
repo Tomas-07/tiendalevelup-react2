@@ -1,11 +1,4 @@
-// ============================================
-// LEVEL-UP GAMER - SISTEMA DE VALIDACIÓN Y FUNCIONALIDADES
-// Versión React - ES6 Module
-// ============================================
 
-// ============================================
-// SISTEMA DE PUNTOS LEVELUP Y GAMIFICACIÓN
-// ============================================
 export const gamification = {
   levels: [
     { level: 1, name: "Novato", minPoints: 0, maxPoints: 99, discount: 0 },
@@ -39,9 +32,7 @@ export const gamification = {
   }
 };
 
-// ============================================
-// GENERAR CÓDIGO DE REFERIDO ÚNICO
-// ============================================
+
 export function generarCodigoReferido() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let codigo = '';
@@ -51,9 +42,7 @@ export function generarCodigoReferido() {
   return codigo;
 }
 
-// ============================================
-// GESTIÓN DEL CARRITO DE COMPRAS
-// ============================================
+
 export const carrito = {
   items: [],
 
@@ -143,9 +132,7 @@ export const carrito = {
   }
 };
 
-// ============================================
-// MOSTRAR MENSAJES AL USUARIO (Toast)
-// ============================================
+
 export function mostrarMensaje(texto, tipo = 'info') {
   // Crear elemento de mensaje
   const mensaje = document.createElement('div');
@@ -189,16 +176,12 @@ export function mostrarMensaje(texto, tipo = 'info') {
   }, 5000);
 }
 
-// ============================================
-// VERIFICAR AUTENTICACIÓN
-// ============================================
+
 export function verificarAutenticacion() {
   return sessionStorage.getItem('isLoggedIn') === 'true';
 }
 
-// ============================================
-// VALIDACIONES
-// ============================================
+
 export function validarEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -212,9 +195,7 @@ export function validarNombre(nombre) {
   return nombre.trim().length >= 3;
 }
 
-// ============================================
-// INICIALIZAR EN WINDOW (para compatibilidad)
-// ============================================
+
 if (typeof window !== 'undefined') {
   window.carrito = carrito;
   window.gamification = gamification;
@@ -222,7 +203,7 @@ if (typeof window !== 'undefined') {
   window.verificarAutenticacion = verificarAutenticacion;
 }
 
-// Exportar todo como default también
+
 export default {
   carrito,
   gamification,
